@@ -18,7 +18,7 @@ class TreeMixture:
         self.num_samples = 0
 
     def simulate_pi(self, seed_val=None):
-        print("Simulating pi for tree mixture... ")
+        # print("Simulating pi for tree mixture... ")
 
         if seed_val is not None:
             np.random.seed(seed_val)
@@ -27,7 +27,7 @@ class TreeMixture:
         self.pi = pi / np.sum(pi)
 
     def simulate_trees(self, seed_val):
-        print("Simulating trees for tree mixture... ")
+        # print("Simulating trees for tree mixture... ")
 
         if seed_val is not None:
             np.random.seed(seed_val)
@@ -35,22 +35,25 @@ class TreeMixture:
         tree_list = []
         for i in range(self.num_clusters):
             t = Tree()
-            t.create_random_tree_fix_nodes(seed_val + i, k=2, num_nodes=self.num_nodes)
+            t.create_random_tree_fix_nodes(
+                seed_val + i, k=2, num_nodes=self.num_nodes)
             tree_list.append(t)
         self.clusters = tree_list
 
     def sample_mixtures(self, num_samples, seed_val=None):
-        print("Simulating samples for tree mixture... ")
+        # print("Simulating samples for tree mixture... ")
 
         if seed_val is not None:
             np.random.seed(seed_val)
 
         self.num_samples = num_samples
-        sample_assignments = np.random.choice(np.arange(self.num_clusters), p=self.pi, size=self.num_samples)
+        sample_assignments = np.random.choice(
+            np.arange(self.num_clusters), p=self.pi, size=self.num_samples)
 
         for i in range(self.num_clusters):
             num_assignments = len(np.where(sample_assignments == i)[0])
-            self.clusters[i].sample_tree(num_samples=num_assignments, seed_val=seed_val + i)
+            self.clusters[i].sample_tree(
+                num_samples=num_assignments, seed_val=seed_val + i)
             for sample in self.clusters[i].samples:
                 self.samples.append(sample)
                 self.sample_assignments.append(i)
@@ -61,7 +64,8 @@ class TreeMixture:
         """ This function prints all features of the tree mixture. """
 
         print("Printing tree mixture... ", self)
-        print("\tnum_nodes: ", self.num_nodes, "\tnum_clusters: ", self.num_clusters, "\tpi: ", self.pi)
+        print("\tnum_nodes: ", self.num_nodes, "\tnum_clusters: ",
+              self.num_clusters, "\tpi: ", self.pi)
         print("\tsample_assignments: ", self.sample_assignments)
         print("\tsamples: ", self.samples)
 
@@ -80,7 +84,8 @@ class TreeMixture:
         samples_filename = filename + "_samples.txt"
         np.savetxt(samples_filename, self.samples, fmt='%i', delimiter="\t")
 
-        print("Saving tree mixture to ", filename, ", samples to: ", samples_filename, "...")
+        print("Saving tree mixture to ", filename,
+              ", samples to: ", samples_filename, "...")
 
         if save_arrays:
             pi_filename = filename + "_pi.npy"
@@ -94,7 +99,8 @@ class TreeMixture:
 
             for i in range(self.num_clusters):
                 tree_filename = filename + "_tree_" + str(i)
-                self.clusters[i].save_tree(tree_filename, save_arrays=save_arrays)
+                self.clusters[i].save_tree(
+                    tree_filename, save_arrays=save_arrays)
 
     def load_mixture(self, filename):
         """ This function loads a tree mixture from a pickle file. """
@@ -209,7 +215,7 @@ class Tree:
         if alpha is None:
             alpha = []
 
-        print("Creating random tree with fixed number of nodes...")
+        # print("Creating random tree with fixed number of nodes...")
         np.random.seed(seed_val)
 
         if len(alpha) == 0:
@@ -223,13 +229,16 @@ class Tree:
 
         cur_num_nodes = 1
         num_leaves = 1
-        while cur_num_nodes != num_nodes:  # len(visit_list) != 0 and cur_num_nodes < num_nodes:
+        # len(visit_list) != 0 and cur_num_nodes < num_nodes:
+        while cur_num_nodes != num_nodes:
             cur_node = np.random.choice(visit_list)
 
             if cur_node == self.root:
-                num_children = np.random.randint(1, min(max_branch + 1, num_nodes - cur_num_nodes + 1))
+                num_children = np.random.randint(
+                    1, min(max_branch + 1, num_nodes - cur_num_nodes + 1))
             else:
-                num_children = np.random.randint(0, min(max_branch + 1, num_nodes - cur_num_nodes + 1))
+                num_children = np.random.randint(
+                    0, min(max_branch + 1, num_nodes - cur_num_nodes + 1))
 
             if num_children > 0:
                 visit_list.remove(cur_node)
@@ -308,7 +317,7 @@ class Tree:
     def sample_tree(self, num_samples=1, seed_val=None):
         """ This function generates samples from the tree. """
 
-        print("Sampling tree nodes...")
+        # print("Sampling tree nodes...")
         if seed_val is not None:
             np.random.seed(seed_val)
 
@@ -336,9 +345,11 @@ class Tree:
                     cur_sample = np.random.choice(np.arange(self.k), p=cat)
                     samples[sample_idx, int(cur_node.name)] = cur_sample
                     if len(cur_node.descendants) == 0:
-                        filtered_samples[sample_idx, int(cur_node.name)] = cur_sample
+                        filtered_samples[sample_idx, int(
+                            cur_node.name)] = cur_sample
                     else:
-                        filtered_samples[sample_idx, int(cur_node.name)] = np.nan
+                        filtered_samples[sample_idx,
+                                         int(cur_node.name)] = np.nan
 
         samples = samples.astype(int)
         self.samples = samples
@@ -412,7 +423,8 @@ class Tree:
                 visit_list = visit_list[1:]
                 visit_list = cur_node.descendants + visit_list
                 visit_depth = visit_depth[1:]
-                visit_depth = [cur_depth + 1] * len(cur_node.descendants) + visit_depth
+                visit_depth = [cur_depth + 1] * \
+                    len(cur_node.descendants) + visit_depth
 
     def print(self):
         """ This function prints all features of the tree. """
@@ -465,9 +477,11 @@ class Tree:
             filtered_samples_filename = filename + "_filtered_samples.txt"
             print("Saving topology to ", topology_filename, ",  samples to ", samples_filename, " and ",
                   filtered_samples_filename, "...")
-            np.savetxt(topology_filename, self.get_topology_array(), delimiter="\t")
+            np.savetxt(topology_filename,
+                       self.get_topology_array(), delimiter="\t")
             np.savetxt(samples_filename, self.samples, delimiter="\t")
-            np.savetxt(filtered_samples_filename, self.filtered_samples, delimiter="\t")
+            np.savetxt(filtered_samples_filename,
+                       self.filtered_samples, delimiter="\t")
 
     def load_tree(self, filename):
         """ This function loads a tree from a pickle file. """
@@ -500,7 +514,7 @@ class Tree:
             t.load_tree_from_direct_arrays(topology_array, theta_array)
         """
 
-        print("Loading tree from topology_array...")
+        # print("Loading tree from topology_array...")
         k = 0
 
         self.root = Node(str(0), [])
@@ -516,7 +530,8 @@ class Tree:
             cur_node = visit_list[0]
             visit_list = visit_list[1:]
 
-            children_indices = np.where(topology_array == int(cur_node.name))[0]
+            children_indices = np.where(
+                topology_array == int(cur_node.name))[0]
             num_children = len(children_indices)
 
             if num_children > 0:
@@ -564,7 +579,8 @@ class Tree:
             cur_node = visit_list[0]
             visit_list = visit_list[1:]
 
-            children_indices = np.where(topology_array == int(cur_node.name))[0]
+            children_indices = np.where(
+                topology_array == int(cur_node.name))[0]
             num_children = len(children_indices)
 
             if num_children > 0:
@@ -624,7 +640,8 @@ def main():
     print("\n1.3. Create a random tree with fixed number of nodes and print it:\n")
     num_nodes = 10
     t = Tree()
-    t.create_random_tree_fix_nodes(seed_val, k, num_nodes=num_nodes, max_branch=3)
+    t.create_random_tree_fix_nodes(
+        seed_val, k, num_nodes=num_nodes, max_branch=3)
     t.print()
 
     print("\n1.4. Create a random binary tree and print it:\n")
